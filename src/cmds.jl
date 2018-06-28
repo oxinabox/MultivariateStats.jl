@@ -2,7 +2,7 @@
 
 ## convert Gram matrix to Distance matrix
 
-function gram2dmat!{DT}(D::AbstractMatrix{DT}, G::AbstractMatrix)
+function gram2dmat!(D::AbstractMatrix{DT}, G::AbstractMatrix) where DT
     # argument checking
     m = size(G, 1)
     n = size(G, 2)
@@ -23,11 +23,11 @@ function gram2dmat!{DT}(D::AbstractMatrix{DT}, G::AbstractMatrix)
     return D
 end
 
-gram2dmat{T<:Real}(G::AbstractMatrix{T}) = gram2dmat!(similar(G, Base.momenttype(T)), G)
+gram2dmat(G::AbstractMatrix{T}) where {T<:Real} = gram2dmat!(similar(G, Base.momenttype(T)), G)
 
 ## convert Distance matrix to Gram matrix
 
-function dmat2gram!{GT}(G::AbstractMatrix{GT}, D::AbstractMatrix)
+function dmat2gram!(G::AbstractMatrix{GT}, D::AbstractMatrix) where GT
     # argument checking
     n = Compat.LinAlg.checksquare(D)
     size(G) == (n, n) ||
@@ -52,12 +52,12 @@ function dmat2gram!{GT}(G::AbstractMatrix{GT}, D::AbstractMatrix)
     return G
 end
 
-dmat2gram{T<:Real}(D::AbstractMatrix{T}) = dmat2gram!(similar(D, Base.momenttype(T)), D)
+dmat2gram(D::AbstractMatrix{T}) where {T<:Real} = dmat2gram!(similar(D, Base.momenttype(T)), D)
 
 ## classical MDS
 
-function classical_mds{T<:Real}(D::AbstractMatrix{T}, p::Int;
-        dowarn::Bool=true)
+function classical_mds(D::AbstractMatrix{T}, p::Int;
+        dowarn::Bool=true) where T<:Real
 
     n = size(D, 1)
     m = min(p, n) #Actual number of eigenpairs wanted

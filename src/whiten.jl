@@ -4,27 +4,27 @@
 #
 # finds W, such that W'CW = I
 #
-function cov_whitening{T<:AbstractFloat}(C::Cholesky{T})
+function cov_whitening(C::Cholesky{T}) where T<:AbstractFloat
     cf = C[:UL]
     full(inv(istriu(cf) ? cf : cf'))::Matrix{T}
 end
 
-cov_whitening!{T<:AbstractFloat}(C::DenseMatrix{T}) = cov_whitening(cholfact!(C, :U))
-cov_whitening{T<:AbstractFloat}(C::DenseMatrix{T}) = cov_whitening!(copy(C))
+cov_whitening!(C::DenseMatrix{T}) where {T<:AbstractFloat} = cov_whitening(cholfact!(C, :U))
+cov_whitening(C::DenseMatrix{T}) where {T<:AbstractFloat} = cov_whitening!(copy(C))
 
-cov_whitening!{T<:AbstractFloat}(C::DenseMatrix{T}, regcoef::Real) =
+cov_whitening!(C::DenseMatrix{T}, regcoef::Real) where {T<:AbstractFloat} =
     cov_whitening!(regularize_symmat!(C, regcoef))
 
-cov_whitening{T<:AbstractFloat}(C::DenseMatrix{T}, regcoef::Real) =
+cov_whitening(C::DenseMatrix{T}, regcoef::Real) where {T<:AbstractFloat} =
     cov_whitening!(copy(C), regcoef)
 
 
 ## Whitening type
 
-immutable Whitening{T<:AbstractFloat}
+struct Whitening{T<:AbstractFloat}
     mean::Vector{T}
     W::Matrix{T}
-    function (::Type{Whitening{T}}){T}(mean::Vector{T}, W::Matrix{T})
+    function Whitening{T}(mean::Vector{T}, W::Matrix{T}) where T
         d, d2 = size(W)
         d == d2 || error("W must be a square matrix.")
         isempty(mean) || length(mean) == d ||
@@ -32,7 +32,7 @@ immutable Whitening{T<:AbstractFloat}
         return new{T}(mean, W)
     end
 end
-(::Type{Whitening}){T<:AbstractFloat}(mean::Vector{T}, W::Matrix{T}) = Whitening{T}(mean, W)
+Whitening(mean::Vector{T}, W::Matrix{T}) where {T<:AbstractFloat} = Whitening{T}(mean, W)
 
 indim(f::Whitening) = size(f.W, 1)
 outdim(f::Whitening) = size(f.W, 2)
@@ -42,8 +42,8 @@ transform(f::Whitening, x::AbstractVecOrMat) = At_mul_B(f.W, centralize(x, f.mea
 
 ## Fit whitening to data
 
-function fit{T<:AbstractFloat}(::Type{Whitening}, X::DenseMatrix{T};
-                               mean=nothing, regcoef::Real=zero(T))
+function fit(::Type{Whitening}, X::DenseMatrix{T};
+             mean=nothing, regcoef::Real=zero(T)) where T<:AbstractFloat
     n = size(X, 2)
     n > 1 || error("X must contain more than one sample.")
     mv = preprocess_mean(X, mean)
@@ -54,7 +54,7 @@ end
 
 # invsqrtm
 
-function _invsqrtm!{T<:AbstractFloat}(C::Matrix{T})
+function _invsqrtm!(C::Matrix{T}) where T<:AbstractFloat
     n = size(C, 1)
     size(C, 2) == n || error("C must be a square matrix.")
     E = eigfact!(Symmetric(C))
@@ -67,5 +67,5 @@ function _invsqrtm!{T<:AbstractFloat}(C::Matrix{T})
     return A_mul_Bt(U, U)
 end
 
-invsqrtm{T<:AbstractFloat}(C::DenseMatrix{T}) = _invsqrtm!(copy(C))
+invsqrtm(C::DenseMatrix{T}) where {T<:AbstractFloat} = _invsqrtm!(copy(C))
 

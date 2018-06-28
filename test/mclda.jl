@@ -8,8 +8,8 @@ end
 #Test equivalence of eigenvectors/singular vectors taking into account possible
 #phase (sign) differences
 #This may end up in Base.Test; see JuliaLang/julia#10651
-function test_approx_eq_vecs{S<:Real,T<:Real}(a::StridedVecOrMat{S},
-    b::StridedVecOrMat{T}, error=nothing)
+function test_approx_eq_vecs(a::StridedVecOrMat{S},
+    b::StridedVecOrMat{T}, error=nothing) where {S<:Real,T<:Real}
     n = size(a, 2)
     @test n==size(b, 2) && size(a, 1)==size(b, 1)
     error==nothing && (error=n^3*(eps(S)+eps(T)))

@@ -1,7 +1,7 @@
 # Factor Analysis
 
 """Factor Analysis type"""
-immutable FactorAnalysis{T<:AbstractFloat}
+struct FactorAnalysis{T<:AbstractFloat}
     mean::Vector{T}       # sample mean: of length d (mean can be empty, which indicates zero mean)
     W::Matrix{T}          # factor loadings matrix: of size d x p
     Ψ::Vector{T}          # noise covariance: diagonal of size d x d
@@ -18,14 +18,14 @@ loadings(M::FactorAnalysis) = M.W
 
 ## use
 
-function transform{T<:AbstractFloat}(m::FactorAnalysis{T}, x::AbstractVecOrMat{T})
+function transform(m::FactorAnalysis{T}, x::AbstractVecOrMat{T}) where T<:AbstractFloat
     xn = centralize(x, mean(m))
     W = m.W
     WᵀΨ⁻¹ = W'*diagm(1./m.Ψ)  # (q x d) * (d x d) = (q x d)
     return inv(I+WᵀΨ⁻¹*W)*(WᵀΨ⁻¹*xn)  # (q x q) * (q x d) * (d x 1) = (q x 1)
 end
 
-function reconstruct{T<:AbstractFloat}(m::FactorAnalysis{T}, z::AbstractVecOrMat{T})
+function reconstruct(m::FactorAnalysis{T}, z::AbstractVecOrMat{T}) where T<:AbstractFloat
     W  = m.W
     # ΣW(W'W)⁻¹z+μ = ΣW(W'W)⁻¹W'Σ⁻¹(x-μ)+μ = Σ(WW⁻¹)((W')⁻¹W')Σ⁻¹(x-μ)+μ = ΣΣ⁻¹(x-μ)+μ = (x-μ)+μ = x
     return cov(m)*W*inv(W'W)*z .+ mean(m)
@@ -43,10 +43,10 @@ end
 
     Rubin, Donald B., and Dorothy T. Thayer. "EM algorithms for ML factor analysis." Psychometrika 47.1 (1982): 69-76.
 """
-function faem{T<:AbstractFloat}(S::DenseMatrix{T}, mv::Vector{T}, n::Int;
+function faem(S::DenseMatrix{T}, mv::Vector{T}, n::Int;
              maxoutdim::Int=size(X,1)-1,
              tol::Real=1.0e-6,   # convergence tolerance
-             tot::Integer=1000)  # maximum number of iterations
+             tot::Integer=1000) where T<:AbstractFloat  # maximum number of iterations
 
     d = size(S,1)
     q = maxoutdim
@@ -84,11 +84,11 @@ end
 
     Zhao, J-H., Philip LH Yu, and Qibao Jiang. "ML estimation for factor analysis: EM or non-EM?." Statistics and computing 18.2 (2008): 109-123.
 """
-function facm{T<:AbstractFloat}(S::DenseMatrix{T}, mv::Vector{T}, n::Int;
+function facm(S::DenseMatrix{T}, mv::Vector{T}, n::Int;
              maxoutdim::Int=size(X,1)-1,
              tol::Real=1.0e-6,   # convergence tolerance
              tot::Integer=1000,  # maximum number of iterations
-             η = tol)            # variance low bound
+             η = tol) where T<:AbstractFloat            # variance low bound
     d = size(S,1)
 
     q = maxoutdim
@@ -153,13 +153,13 @@ end
 
 
 ## interface functions
-function fit{T<:AbstractFloat}(::Type{FactorAnalysis}, X::DenseMatrix{T};
+function fit(::Type{FactorAnalysis}, X::DenseMatrix{T};
              method::Symbol=:cm,
              maxoutdim::Int=size(X,1)-1,
              mean=nothing,
              tol::Real=1.0e-6,   # convergence tolerance
              tot::Integer=1000,  # maximum number of iterations
-             η = tol)            # variance low bound
+             η = tol) where T<:AbstractFloat            # variance low bound
 
     d, n = size(X)
 
