@@ -1,7 +1,7 @@
 # Probabilistic Principal Component Analysis
 
 """Probabilistic PCA type"""
-immutable PPCA{T<:AbstractFloat}
+struct PPCA{T<:AbstractFloat}
     mean::Vector{T}       # sample mean: of length d (mean can be empty, which indicates zero mean)
     W::Matrix{T}          # weight matrix: of size d x p
     σ²::T                 # residual variance
@@ -19,14 +19,14 @@ loadings(M::PPCA) = M.W
 
 ## use
 
-function transform{T<:AbstractFloat}(m::PPCA{T}, x::AbstractVecOrMat{T})
+function transform(m::PPCA{T}, x::AbstractVecOrMat{T}) where T<:AbstractFloat
     xn = centralize(x, m.mean)
     W  = m.W
     M = W'W .+ m.σ²*eye(size(m.W,2))
     return inv(M)*m.W'*xn
 end
 
-function reconstruct{T<:AbstractFloat}(m::PPCA{T}, z::AbstractVecOrMat{T})
+function reconstruct(m::PPCA{T}, z::AbstractVecOrMat{T}) where T<:AbstractFloat
     W  = m.W
     WTW = W'W
     M  = WTW .+ var(m)*eye(size(WTW,1))
@@ -41,9 +41,9 @@ end
 
 ## core algorithms
 
-function ppcaml{T<:AbstractFloat}(Z::DenseMatrix{T}, mean::Vector{T};
+function ppcaml(Z::DenseMatrix{T}, mean::Vector{T};
                 maxoutdim::Int=size(Z,1)-1,
-                tol::Real=1.0e-6) # convergence tolerance
+                tol::Real=1.0e-6) where T<:AbstractFloat # convergence tolerance
 
     check_pcaparams(size(Z,1), mean, maxoutdim, 1.)
 
@@ -73,10 +73,10 @@ function ppcaml{T<:AbstractFloat}(Z::DenseMatrix{T}, mean::Vector{T};
     return PPCA(mean, W, σ²)
 end
 
-function ppcaem{T<:AbstractFloat}(S::DenseMatrix{T}, mean::Vector{T}, n::Int;
+function ppcaem(S::DenseMatrix{T}, mean::Vector{T}, n::Int;
                 maxoutdim::Int=size(S,1)-1,
                 tol::Real=1.0e-6,   # convergence tolerance
-                tot::Integer=1000)  # maximum number of iterations
+                tot::Integer=1000) where T<:AbstractFloat  # maximum number of iterations
 
     check_pcaparams(size(S,1), mean, maxoutdim, 1.)
 
@@ -117,10 +117,10 @@ function ppcaem{T<:AbstractFloat}(S::DenseMatrix{T}, mean::Vector{T}, n::Int;
     return PPCA(mean, W, σ²)
 end
 
-function bayespca{T<:AbstractFloat}(S::DenseMatrix{T}, mean::Vector{T}, n::Int;
+function bayespca(S::DenseMatrix{T}, mean::Vector{T}, n::Int;
                  maxoutdim::Int=size(S,1)-1,
                  tol::Real=1.0e-6,   # convergence tolerance
-                 tot::Integer=1000)  # maximum number of iterations
+                 tot::Integer=1000) where T<:AbstractFloat  # maximum number of iterations
 
     check_pcaparams(size(S,1), mean, maxoutdim, 1.)
 
@@ -171,12 +171,12 @@ end
 
 ## interface functions
 
-function fit{T<:AbstractFloat}(::Type{PPCA}, X::DenseMatrix{T};
+function fit(::Type{PPCA}, X::DenseMatrix{T};
              method::Symbol=:ml,
              maxoutdim::Int=size(X,1)-1,
              mean=nothing,
              tol::Real=1.0e-6,   # convergence tolerance
-             tot::Integer=1000)  # maximum number of iterations
+             tot::Integer=1000) where T<:AbstractFloat  # maximum number of iterations
 
     d, n = size(X)
 

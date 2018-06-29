@@ -20,17 +20,17 @@ decentralize(x::AbstractMatrix, m::AbstractVector) = (isempty(m) ? x : x .+ m)::
 
 # get a full mean vector 
 
-fullmean{T}(d::Int, mv::Vector{T}) = (isempty(mv) ? zeros(T, d) : mv)::Vector{T} 
+fullmean(d::Int, mv::Vector{T}) where {T} = (isempty(mv) ? zeros(T, d) : mv)::Vector{T} 
 
-preprocess_mean{T<:AbstractFloat}(X::Matrix{T}, m) = (m == nothing ? vec(Base.mean(X, 2)) :
-                                                      m == 0 ? T[] : 
-                                                      m)::Vector{T}
+preprocess_mean(X::Matrix{T}, m) where {T<:AbstractFloat} = (m == nothing ? vec(Base.mean(X, 2)) :
+                                                             m == 0 ? T[] : 
+                                                             m)::Vector{T}
 
 # choose the first k values and columns
 #
 # S must have fields: values & vectors
 
-function extract_kv{T}(fac::Factorization{T}, ord::AbstractVector{Int}, k::Int)
+function extract_kv(fac::Factorization{T}, ord::AbstractVector{Int}, k::Int) where T
     si = ord[1:k]
     vals = fac.values[si]::Vector{T}
     vecs = fac.vectors[:, si]::Matrix{T}
@@ -98,7 +98,7 @@ function add_diag!(A::AbstractMatrix, v::Real)
 end
 
 # regularize a symmetric matrix
-function regularize_symmat!{T<:AbstractFloat}(A::Matrix{T}, lambda::Real)
+function regularize_symmat!(A::Matrix{T}, lambda::Real) where T<:AbstractFloat
     if lambda > 0
         emax = eigmax(Symmetric(A)) 
         add_diag!(A, emax * lambda)

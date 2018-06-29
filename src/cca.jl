@@ -2,7 +2,7 @@
 
 #### CCA Type
 
-type CCA
+mutable struct CCA
     xmean::Vector{Float64}  # sample mean of X: of length dx (can be empty)
     ymean::Vector{Float64}  # sample mean of Y: of length dy (can be empty)  
     xproj::Matrix{Float64}  # projection matrix for X, of size (dx, p)
@@ -50,8 +50,8 @@ correlations(M::CCA) = M.corrs
 
 ## use
 
-xtransform{T<:Real}(M::CCA, X::AbstractVecOrMat{T}) = At_mul_B(M.xproj, centralize(X, M.xmean))
-ytransform{T<:Real}(M::CCA, Y::AbstractVecOrMat{T}) = At_mul_B(M.yproj, centralize(Y, M.ymean))
+xtransform(M::CCA, X::AbstractVecOrMat{T}) where {T<:Real} = At_mul_B(M.xproj, centralize(X, M.xmean))
+ytransform(M::CCA, Y::AbstractVecOrMat{T}) where {T<:Real} = At_mul_B(M.yproj, centralize(Y, M.ymean))
 
 ## show & dump
 
